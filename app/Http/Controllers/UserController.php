@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Schedule;
 use Exception;
 use Illuminate\Http\Request;
 use App\Http\Requests\UserRequest;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+
 class UserController extends Controller {
 
     //View All Users
@@ -16,12 +19,33 @@ class UserController extends Controller {
 
     //Create User
     public function create(UserRequest $request){
+        DB::beginTransaction();
+        
         try{
             $validated = $request->validated();
             $validated['password'] = Hash::make($validated['password']);
             
             $user = User::create($validated);
-            $user ->load('role', 'position');
+            if($request->has('schedule_ids') &&$request->schedule_ids){
+                
+                if(count($request->schedule_ids) > 2){
+                    return response()->json([
+                        'message' => 'User cannot be assigned to more than two schedules.'
+                    ], 422);
+                }
+
+                foreach($request->schedule_ids as $scheduleId){
+                        if (!Schedule::find($scheduleId)) {
+                            return response()->json([
+                                'message' => "Schedule with ID {$scheduleId} does not exist."
+                            ], 422);
+                        }
+                    }
+                $user->schedules()->attach($request->schedule_ids);
+            }
+            DB::commit();
+
+            $user ->load('role', 'position','schedules:id,shift_name,time_in,time_out');
         
             return response()->json(['message'=>'User Created Successfully', 'user'=> $user],201);
         }
