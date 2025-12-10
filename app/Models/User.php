@@ -34,6 +34,7 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $hidden = [
+        
         'password',
         'remember_token',
     ];
@@ -59,5 +60,10 @@ class User extends Authenticatable
     public function position()
     {
         return $this->belongsTo(Position::class,'position_id','id');
+    }
+
+    public function schedules()
+    {
+        return $this->belongsToMany(Schedule::class, 'user_schedules', 'user_id', 'schedule_id');
     }
 }

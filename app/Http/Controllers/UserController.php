@@ -33,7 +33,8 @@ class UserController extends Controller {
     //View User By ID
     public function read($id){
         try {
-            $user = User::with('role')->with('position')->find($id);
+            $user = User::findOrFail($id);
+            $user->load(['role:id,name','position:id,name','schedules:id,shift_name,time_in,time_out']);
             
             if(!$user){
                 return response()->json(['message'=>'User not found'],404);
