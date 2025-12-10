@@ -40,17 +40,17 @@ class RoleRequest extends FormRequest
         ];
     }
 
-    public function messages(): array
-    {
-        return [
-            'name.unique' => 'The role name has already been taken.',
-            'name.required' => 'The role name is required.',
-            'name.string' => 'The role name must be a string.',
-            'name.regex' => 'The role name can only contain letters and spaces.',
-            'description.string' => 'The description must be a string.',
-            'description.regex' => 'The description can only contain letters, numbers, spaces, and punctuation marks like .,"\'-',
-        ];
-    }
+    // public function messages(): array
+    // {
+    //     return [
+    //         'name.unique' => 'The role name has already been taken.',
+    //         'name.required' => 'The role name is required.',
+    //         'name.string' => 'The role name must be a string.',
+    //         'name.regex' => 'The role name can only contain letters and spaces.',
+    //         'description.string' => 'The description must be a string.',
+    //         'description.regex' => 'The description can only contain letters, numbers, spaces, and punctuation marks like .,"\'-',
+    //     ];
+    // }
 
     protected function failedValidation(Validator $validator)
     {

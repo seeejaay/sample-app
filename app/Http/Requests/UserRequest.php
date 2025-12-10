@@ -35,15 +35,15 @@ class UserRequest extends FormRequest
         ];
     }
 
-    public function messages(): array
-    {
-        return [
-            'firstname.regex' => 'First name can only contain letters and spaces.',
-            'middlename.regex' => 'Middle name can only contain letters and spaces.',
-            'lastname.regex' => 'Last name can only contain letters and spaces.',
-            'password.regex' => 'Password must contain at least one uppercase letter, one number, and one special character.',
-        ];
-    }
+    // public function messages(): array
+    // {
+    //     return [
+    //         'firstname.regex' => 'First name can only contain letters and spaces.',
+    //         'middlename.regex' => 'Middle name can only contain letters and spaces.',
+    //         'lastname.regex' => 'Last name can only contain letters and spaces.',
+    //         'password.regex' => 'Password must contain at least one uppercase letter, one number, and one special character.',
+    //     ];
+    // }
      protected function failedValidation(Validator $validator)
     {
         throw new HttpResponseException(
