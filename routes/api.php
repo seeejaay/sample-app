@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\AuthController;
-
+use App\Http\Controllers\PositionController;
 
 //Public Routes
     //Authentication Routes
@@ -32,6 +32,14 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function(){
     Route::get('roles/{id}', [RoleController::class, 'read']);
     Route::put('roles/{id}', [RoleController::class, 'update']);
     Route::delete('roles/{id}', [RoleController::class, 'delete']);
+
+    //Route for Position
+    Route::get('positions', [PositionController::class, 'index']);
+    Route::post('positions', [PositionController::class, 'create']);
+    Route::get('positions/{id}', [PositionController::class, 'read']);
+    Route::put('positions/{id}', [PositionController::class, 'update']);
+    Route::delete('positions/{id}', [PositionController::class, 'delete']);
+
 
     //Authentication Routes
     Route::post('logout', [AuthController::class, 'logout']);

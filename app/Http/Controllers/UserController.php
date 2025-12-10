@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
-
+use App\Http\Requests\UserRequest;
+use Illuminate\Support\Facades\Hash;
 class UserController extends Controller {
 
     //View All Users
@@ -14,18 +15,13 @@ class UserController extends Controller {
     }
 
     //Create User
-    public function create(Request $request){
+    public function create(UserRequest $request){
         try{
-            $validated = $request->validate([
-                'firstname' => 'required|string|max:255',
-                'middlename' => 'nullable|string|max:255',
-                'lastname' => 'required|string|max:255',
-                'email' => 'required|email|unique:users,email',
-                'password' => 'required|string|min:8|confirmed|regex:/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]+$/',
-                'role_id' => 'required|exists:roles,id',
-            ]);
-
+            $validated = $request->validated();
+            $validated['password'] = Hash::make($validated['password']);
+            
             $user = User::create($validated);
+            $user ->load('role', 'position');
         
             return response()->json(['message'=>'User Created Successfully', 'user'=> $user],201);
         }
@@ -37,7 +33,8 @@ class UserController extends Controller {
     //View User By ID
     public function read($id){
         try {
-            $user = User::find($id);
+            $user = User::with('role')->with('position')->find($id);
+            
             if(!$user){
                 return response()->json(['message'=>'User not found'],404);
             }
@@ -49,25 +46,24 @@ class UserController extends Controller {
 
 
     //Edit User
-    public function update(Request $request,$id){
+    public function update(UserRequest $request, $id){
         try {
-        $user = User::find($id);
-        if(!$user){
-            return response()->json(['message'=>'User not found'],404);
-        }
+            $user = User::findOrFail($id);
+            $validated = $request->validated();
 
-        $validated = $request->validate([
-            'full_name' => 'sometimes|required|string|max:255|regex:/^[a-zA-Z\s]+$/|unique:users,full_name,'.$user->id,
-            'email' => 'sometimes|required|email|unique:users,email,'.$user->id,
-            'password' => 'sometimes|required|string|min:8|confirmed|regex:/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]+$/',
-            'role_id' => 'sometimes|required|exists:roles,id',
-        ]);
-        $user->update($validated);
-        return response()->json(['message'=>'User Updated Successfully', 'user'=>$user],200);
-    } catch (Exception $e) {
-        return response()->json(['message'=>'Failed to update user', 'error' => $e->getMessage()], 500);
-    }
-    }
+            if(isset($validated['password'])){
+                $validated['password'] = Hash::make($validated['password']);
+            }
+            
+            $user->update($validated);
+            $user->load('role', 'position');
+            
+            return response()->json(['message'=>'User Updated Successfully', 'user'=>$user], 200);
+        } catch (Exception $e) {
+            return response()->json(['message'=>'Failed to update user', 'error' => $e->getMessage()], 500);
+        }
+}
+
 
     //Delete user
     public function delete($id){

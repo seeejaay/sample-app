@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use Exception;
+use App\Http\Requests\RoleRequest;
 
 class RoleController extends Controller
 {
@@ -18,13 +19,9 @@ class RoleController extends Controller
     }
 
     //Create Role
-    public function create(Request $request){
+    public function create(RoleRequest $request){
         try{
-
-            $validated = $request->validate([
-                'name' => 'required|string|unique:roles,name',
-                'description' => 'nullable|string',
-            ]);
+            $validated = $request->validated();
             $role = Role::create($validated);
             return response()->json(['message'=>'Role Created Successfully', 'role'=> $role], 201);
         }
@@ -43,14 +40,11 @@ class RoleController extends Controller
     }
 
     //Update Role
-    public function update(Request $request, $id){
+    public function update(RoleRequest $request, $id){
         try {
 
             $role = Role::findOrFail($id);
-            $validated = $request-> validate([
-                'name' => 'sometimes|required|string|unique:roles,name,'.$role->id,
-                'description' => 'nullable|string',
-            ]);
+            $validated = $request->validated();
             $role->update($validated);
             return response()->json(['message'=>'Role Updated Successfully', 'role'=>$role], 200);
         } catch (Exception $e) {

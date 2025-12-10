@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Position;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -20,6 +21,11 @@ class DatabaseSeeder extends Seeder
         Role::factory()->create([
             'name' => 'User',
             'description' => 'User Role with limited permissions',
+        ]);
+
+        Position::factory()->create([
+            'name' => 'Developer',
+            'description' => 'Responsible for developing software applications',
         ]);
 
         User::factory()->create([
