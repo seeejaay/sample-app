@@ -2,10 +2,9 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\Validator as ValidationValidator;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 class PositionRequest extends FormRequest
 {
@@ -52,13 +51,14 @@ class PositionRequest extends FormRequest
         ];
     }
 
-    public function failedValidation(ValidationValidator $validator)
+    protected function failedValidation(Validator $validator)
     {
-       throw new HttpResponseException(
+        throw new HttpResponseException(
             response()->json([
                 'message' => 'Validation failed',
                 'errors' => $validator->errors()
             ], 422)
         );
     }
+
 }
