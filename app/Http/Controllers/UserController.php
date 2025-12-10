@@ -102,9 +102,6 @@ class UserController extends Controller {
                 $user->schedules()->sync($request->schedule_ids);
             }
             DB::commit();
-
-
-
             $user->load('role', 'position','schedules:id,shift_name,time_in,time_out');
             
             return response()->json(['message'=>'User Updated Successfully', 'user'=>$user], 200);
