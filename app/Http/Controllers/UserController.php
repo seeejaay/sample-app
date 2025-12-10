@@ -50,6 +50,7 @@ class UserController extends Controller {
             return response()->json(['message'=>'User Created Successfully', 'user'=> $user],201);
         }
         catch (Exception $e) {
+            DB::rollBack();
             return response()->json(['message'=>'Failed to create user', 'error' => $e->getMessage()], 500);
         }
     }
@@ -72,6 +73,7 @@ class UserController extends Controller {
 
     //Edit User
     public function update(UserRequest $request, $id){
+        DB::beginTransaction();
         try {
             $user = User::findOrFail($id);
             $validated = $request->validated();
@@ -81,13 +83,36 @@ class UserController extends Controller {
             }
             
             $user->update($validated);
-            $user->load('role', 'position');
+
+             if($request->has('schedule_ids') &&$request->schedule_ids){
+                
+                if(count($request->schedule_ids) > 2){
+                    return response()->json([
+                        'message' => 'User cannot be assigned to more than two schedules.'
+                    ], 422);
+                }
+
+                foreach($request->schedule_ids as $scheduleId){
+                        if (!Schedule::find($scheduleId)) {
+                            return response()->json([
+                                'message' => "Schedule with ID {$scheduleId} does not exist."
+                            ], 422);
+                        }
+                    }
+                $user->schedules()->sync($request->schedule_ids);
+            }
+            DB::commit();
+
+
+
+            $user->load('role', 'position','schedules:id,shift_name,time_in,time_out');
             
             return response()->json(['message'=>'User Updated Successfully', 'user'=>$user], 200);
         } catch (Exception $e) {
+            DB::rollBack();
             return response()->json(['message'=>'Failed to update user', 'error' => $e->getMessage()], 500);
         }
-}
+    }
 
 
     //Delete user
