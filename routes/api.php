@@ -50,8 +50,8 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function(){
     Route::delete('schedules/{id}', [ScheduleController::class, 'delete']);
 
     //Routes for User Schedules
-    Route::post('user-schedules', [UserScheduleController::class, 'assign'])->name('user-schedules.assign');
-    Route::delete('user-schedules', [UserScheduleController::class, 'unassign'])->name('user-schedules.unassign');
+    Route::post('user-schedules', [UserScheduleController::class, 'assign']);
+    Route::delete('user-schedules', [UserScheduleController::class, 'unassign']);
     Route::get('user-schedules/{user_id}', [UserScheduleController::class, 'getUserSchedules']);
 
 
