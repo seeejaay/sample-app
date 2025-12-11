@@ -5,26 +5,30 @@ namespace App\Http\Controllers;
 use Exception;
 use Illuminate\Http\Request;
 use App\Http\Requests\UserRequest;
+use App\Repository\UserRepository\UserRepositoryInterface;
 use App\Services\UserService\UserServiceInterface;
 
 class UserController extends Controller {
 
+    protected $userRepository;
     protected $userService;
 
-    public function __construct(UserServiceInterface $userService){
+    public function __construct(
+        UserRepositoryInterface $userRepository,
+        UserServiceInterface $userService
+    ){
+        $this->userRepository = $userRepository;
         $this->userService = $userService;
     }
 
-    //View All Users
     public function index(){
         try {
-            return response()->json($this->userService->getAllUsers());
+            return response()->json($this->userRepository->getAll());
         } catch (Exception $e) {
             return response()->json(['message' => 'Failed to retrieve users', 'error' => $e->getMessage()], 500);
         }
     }
 
-    //Create User
     public function store(UserRequest $request)
     {
         try {
@@ -42,17 +46,15 @@ class UserController extends Controller {
         }
     }
 
-    //View User By ID
     public function show($user){
         try {
-            $user = $this->userService->getUserById($user);
+            $user = $this->userRepository->findById($user);
             return response()->json($user);
         } catch (Exception $e) {
             return response()->json(['message' => 'Failed to retrieve user', 'error' => $e->getMessage()], 500);
         }
     }
 
-    //Edit User
     public function update(UserRequest $request, $user){
         try {
             $user = $this->userService->updateUser($user, $request->validated());
@@ -63,20 +65,18 @@ class UserController extends Controller {
         }
     }
 
-    //Delete user
     public function destroy($user){
         try {
-            $this->userService->deleteUser($user);
+            $this->userRepository->delete($user);
             return response()->json(['message' => 'User Deleted Successfully'], 204);
         } catch (Exception $e) {
             return response()->json(['message' => 'Failed to delete user', 'error' => $e->getMessage()], 500);
         }
     }
 
-    //Current User Profile
     public function profile(Request $request){
         try {
-            $user = $this->userService->getUserProfile($request->user());
+            $user = $request->user();
             return response()->json($user);
         } catch (Exception $e) {
             return response()->json(['message' => 'Failed to retrieve profile', 'error' => $e->getMessage()], 500);

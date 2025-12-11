@@ -29,19 +29,19 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         //
+    }
+    
+    /**
+     * Bootstrap any application services.
+    */
+    public function boot(): void
+    {
         $this->app->bind(AuthServiceInterface::class, AuthService::class);
         $this->app->bind(UserServiceInterface::class, UserService::class);
         $this->app->bind(RoleServiceInterface::class, RoleService::class);
         $this->app->bind(PositionServiceInterface::class, PositionService::class);
         $this->app->bind(ScheduleServiceInterface::class, ScheduleService::class);
         $this->app->bind(UserScheduleServiceInterface::class, UserScheduleService::class);
-    }
-
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
         //
     }
 }

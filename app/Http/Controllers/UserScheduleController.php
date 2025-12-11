@@ -2,79 +2,60 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Http\Requests\UserScheduleRequest;
+use App\Services\UserScheduleService\UserScheduleServiceInterface;
 use Exception;
 
 class UserScheduleController extends Controller
 {
-    //
+    protected $userScheduleService;
+
+    public function __construct(UserScheduleServiceInterface $userScheduleService)
+    {
+        $this->userScheduleService = $userScheduleService;
+    }
 
     public function assign(UserScheduleRequest $request){
         try {
-
-            $user = User::findorFail($request->user_id);
-
-
-            if ($user->schedules->contains($request->schedule_id)) {
-                return response()->json([
-                    'message' => 'Schedule is already assigned to the user.'
-                ], 422);
-            }
-
-             if ($user->schedules()->count() >= 2) {
-                return response()->json([
-                    'message' => 'User cannot be assigned to more than two schedules.'
-                ], 422);
-            }
-
-            $user->schedules()->attach($request->schedule_id);
+            $this->userScheduleService->assignScheduleToUser($request->validated());
 
             return response()->json([
                 'message' => 'Schedule assigned to user successfully.'
-            ], 200);    
+            ], 200);
         } catch (Exception $e) {
+            $statusCode = $e->getCode() ?: 500;
             return response()->json([
-                'message' => 'Failed to assign schedule to user.',
-                'error' => $e->getMessage()
-            ], 500);
+                'message' => $e->getMessage()
+            ], $statusCode);
         }
     }
 
     public function unassign(UserScheduleRequest $request){
         try {
-
-            $user = User::findorFail($request->user_id);
-
-           if (!$user->schedules()->where('schedule_id', $request->schedule_id)->exists()) {
-                return response()->json([
-                    'message' => 'Schedule is not assigned to the user.'
-                ], 422);
-        }
-
-            $user->schedules()->detach($request->schedule_id);
+            $this->userScheduleService->removeScheduleFromUser(
+                $request->user_id,
+                $request->schedule_id
+            );
 
             return response()->json([
                 'message' => 'Schedule unassigned from user successfully.'
-            ], 200);    
+            ], 200);
         } catch (Exception $e) {
+            $statusCode = $e->getCode() ?: 500;
             return response()->json([
-                'message' => 'Failed to unassign schedule from user.',
-                'error' => $e->getMessage()
-            ], 500);
+                'message' => $e->getMessage()
+            ], $statusCode);
         }
     }
 
     public function getUserSchedules($user_id){
         try {
-
-            $user = User::findorFail($user_id);
-            $schedules = $user->schedules;
+            $schedules = $this->userScheduleService->getSchedulesByUserId($user_id);
 
             return response()->json([
                 'status' => 'success',
                 'data' => $schedules
-            ], 200);    
+            ], 200);
         } catch (Exception $e) {
             return response()->json([
                 'status' => 'error',
@@ -83,5 +64,4 @@ class UserScheduleController extends Controller
             ], 500);
         }
     }
-
 }
