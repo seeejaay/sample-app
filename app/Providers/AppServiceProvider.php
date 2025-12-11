@@ -3,6 +3,10 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+
+use App\Services\AuthService\AuthService;
+use App\Services\AuthService\AuthServiceInterface;
+
 use App\Services\UserService\UserService;
 use App\Services\UserService\UserServiceInterface;
 
@@ -25,6 +29,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         //
+        $this->app->bind(AuthServiceInterface::class, AuthService::class);
         $this->app->bind(UserServiceInterface::class, UserService::class);
         $this->app->bind(RoleServiceInterface::class, RoleService::class);
         $this->app->bind(PositionServiceInterface::class, PositionService::class);
