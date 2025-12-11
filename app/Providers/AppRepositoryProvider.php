@@ -24,7 +24,7 @@ use App\Repository\UserScheduleRepository\UserScheduleRepository;
 use App\Repository\UserScheduleRepository\UserScheduleRepositoryInterface;
 
 
-class AppInterfaceProvider extends ServiceProvider
+class AppRepositoryProvider extends ServiceProvider
 {
     public function register(): void
     {
