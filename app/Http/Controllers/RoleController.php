@@ -19,7 +19,7 @@ class RoleController extends Controller
     }
 
     //Create Role
-    public function create(RoleRequest $request){
+    public function store(RoleRequest $request){
         try{
             $validated = $request->validated();
             $role = Role::create($validated);
@@ -31,7 +31,7 @@ class RoleController extends Controller
     }
 
     //View Role By ID
-    public function read($id){
+    public function show($id){
         try {
             return response()->json(Role::findOrFail($id));
         } catch (Exception $e) {
@@ -53,7 +53,7 @@ class RoleController extends Controller
     }
 
     //Delete Role
-    public function delete($id){
+    public function destroy($id){
         try {
 
             $role = Role::findOrFail($id);

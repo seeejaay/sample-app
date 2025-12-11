@@ -18,7 +18,7 @@ class PositionController extends Controller
         } 
     }
  
-    public function create(PositionRequest $request){
+    public function store(PositionRequest $request){
         try{
             $validated = $request-> validated();
            
@@ -30,7 +30,7 @@ class PositionController extends Controller
         } 
     }
 
-    public function read($id){
+    public function show($id){
         try {
             return response()->json(Position::findOrFail($id));
         } catch (Exception $e) {
@@ -50,7 +50,7 @@ class PositionController extends Controller
         } 
     }
 
-    public function delete($id){
+    public function destroy($id){
         try {
 
             $position = Position::findOrFail($id);

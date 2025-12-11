@@ -19,7 +19,7 @@ class ScheduleController extends Controller
         }
     }
 
-    public function create(ScheduleRequest $request)
+    public function store(ScheduleRequest $request)
     {
         try{
             $schedule = Schedule::create($request->validated());
@@ -29,7 +29,7 @@ class ScheduleController extends Controller
         }
     }
 
-    public function read($id)
+    public function show($id)
     {
         try{
             $schedule = Schedule::findOrFail($id);
@@ -51,7 +51,7 @@ class ScheduleController extends Controller
         }
     }
 
-    public function delete($id)
+    public function destroy($id)
     {
         try{
             $schedule = Schedule::findOrFail($id);

@@ -18,7 +18,7 @@ class UserController extends Controller {
     }
 
     //Create User
-    public function create(UserRequest $request){
+    public function store(UserRequest $request){
         DB::beginTransaction();
         
         try{
@@ -56,7 +56,7 @@ class UserController extends Controller {
     }
 
     //View User By ID
-    public function read($id){
+    public function show($id){
         try {
             $user = User::findOrFail($id);
             $user->load(['role:id,name','position:id,name','schedules:id,shift_name,time_in,time_out']);
@@ -113,7 +113,7 @@ class UserController extends Controller {
 
 
     //Delete user
-    public function delete($id){
+    public function destroy($id){
         try {
             $user = User::findOrFail($id);
             $user->delete();
