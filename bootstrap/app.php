@@ -18,7 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 Route::middleware('api')
                 ->group(base_path('routes/Auth/auth.php'));
                 Route::group([
-                    'middlware' => ['api','auth:sanctum'],
+                    'middleware' => ['api','auth:sanctum'],
                 ], function ($router) {
                     $routes = glob(base_path('routes/*/*.php'));
                     foreach ($routes as $route)
@@ -34,6 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         //
+        $middleware->statefulApi();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
