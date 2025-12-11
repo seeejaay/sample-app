@@ -30,7 +30,7 @@ class AuthController extends Controller{
 
     public function logout(Request $request){
         try{
-           $this->authService->logout($request->user());
+            $this->authService->logout($request->user());
             return response()->json(['message'=>'Logged out successfully'], 200);
         }
         catch (Exception $e) {
