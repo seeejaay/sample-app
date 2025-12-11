@@ -6,7 +6,7 @@ use App\Http\Controllers\ScheduleController;
 Route::controller(ScheduleController::class)
 ->prefix('schedules')
 ->group(function(){
-    Route::get('{id}/users','getUsers')->name('schedules.users');
+    Route::get('{schedule}/users','getUsers')->name('schedules.users');
 });
 
 

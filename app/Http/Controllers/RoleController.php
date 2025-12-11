@@ -1,17 +1,23 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Models\Role;
-use Illuminate\Http\Request;
 use Exception;
+use App\Models\Role;
 use App\Http\Requests\RoleRequest;
-
+use App\Services\RoleService\RoleServiceInterface;
 class RoleController extends Controller
 {
+    protected $roleService;
+
+    public function __construct(RoleServiceInterface $roleService){
+        $this->roleService = $roleService;
+    }
+
+
     // View All Roles
     public function index(){
         try{
-            return response()->json(Role::all());
+            return response()->json($this->roleService->getAllRoles());
         }
         catch (Exception $e) {
             return response()->json(['message'=>'Failed to retrieve roles', 'error' => $e->getMessage()], 500);
@@ -21,8 +27,7 @@ class RoleController extends Controller
     //Create Role
     public function store(RoleRequest $request){
         try{
-            $validated = $request->validated();
-            $role = Role::create($validated);
+           $role = $this->roleService->createRole($request->validated());
             return response()->json(['message'=>'Role Created Successfully', 'role'=> $role], 201);
         }
         catch (Exception $e) {
@@ -31,21 +36,19 @@ class RoleController extends Controller
     }
 
     //View Role By ID
-    public function show($id){
+    public function show($role){
         try {
-            return response()->json(Role::findOrFail($id));
+            return response()->json($this->roleService->getRoleById($role));
         } catch (Exception $e) {
             return response()->json(['message'=>'Failed to retrieve role', 'error' => $e->getMessage()], 500);
         }
     }
 
     //Update Role
-    public function update(RoleRequest $request, $id){
+    public function update(RoleRequest $request, $role){
         try {
 
-            $role = Role::findOrFail($id);
-            $validated = $request->validated();
-            $role->update($validated);
+            $role = $this->roleService->updateRole($role, $request->validated());
             return response()->json(['message'=>'Role Updated Successfully', 'role'=>$role], 200);
         } catch (Exception $e) {
             return response()->json(['message'=>'Failed to update role', 'error' => $e->getMessage()], 500);
@@ -53,11 +56,10 @@ class RoleController extends Controller
     }
 
     //Delete Role
-    public function destroy($id){
+    public function destroy($role){
         try {
 
-            $role = Role::findOrFail($id);
-            $role->delete();
+            $this->roleService->deleteRole($role);
             return response()->json(['message'=>'Role Deleted Successfully'], 204);
         } catch (Exception $e) {
             return response()->json(['message'=>'Failed to delete role', 'error' => $e->getMessage()], 500);

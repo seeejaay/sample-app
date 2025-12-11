@@ -16,7 +16,7 @@ class UserRequest extends FormRequest
 
     public function rules(): array
     {
-        $userId = $this->route('id');
+        $userId = $this->route('user');
         $isUpdate = $this->isMethod('put') || $this->isMethod('patch');
         $required = $isUpdate ? 'sometimes|required' : 'required';
 
@@ -32,18 +32,11 @@ class UserRequest extends FormRequest
             'password' => "{$required}|string|min:8|confirmed|regex:/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]+$/",
             'role_id' => "{$required}|exists:roles,id",
             'position_id' => "{$required}|exists:positions,id",
+            'schedule_ids' => 'nullable|array|max:2',
+            'schedule_ids.*' => 'integer|exists:schedules,id',
         ];
     }
 
-    // public function messages(): array
-    // {
-    //     return [
-    //         'firstname.regex' => 'First name can only contain letters and spaces.',
-    //         'middlename.regex' => 'Middle name can only contain letters and spaces.',
-    //         'lastname.regex' => 'Last name can only contain letters and spaces.',
-    //         'password.regex' => 'Password must contain at least one uppercase letter, one number, and one special character.',
-    //     ];
-    // }
      protected function failedValidation(Validator $validator)
     {
         throw new HttpResponseException(

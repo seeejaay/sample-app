@@ -2,18 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Schedule;
 use App\Http\Requests\ScheduleRequest;
+use App\Services\ScheduleService\ScheduleServiceInterface;
 
 class ScheduleController extends Controller
 {
-    //
+    protected $scheduleService;
+
+    public function __construct(ScheduleServiceInterface $scheduleService)
+    {
+        $this->scheduleService = $scheduleService;
+    }
+        //
     public function index()
     {
         try{
-            $schedules = Schedule::all();
-            return response()->json($schedules, 200);
+            return response()->json($this->scheduleService->getAllSchedules(), 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Failed to retrieve schedules', 'error' => $e->getMessage()], 500);
         }
@@ -22,17 +26,17 @@ class ScheduleController extends Controller
     public function store(ScheduleRequest $request)
     {
         try{
-            $schedule = Schedule::create($request->validated());
+            $schedule = $this->scheduleService->createSchedule($request->validated());
             return response()->json($schedule, 201);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Failed to create schedule', 'error' => $e->getMessage()], 500);
         }
     }
 
-    public function show($id)
+    public function show($schedule)
     {
         try{
-            $schedule = Schedule::findOrFail($id);
+            $schedule = $this->scheduleService->getScheduleById($schedule);
             return response()->json($schedule, 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Schedule not found', 'error' => $e->getMessage()], 404);
@@ -40,33 +44,30 @@ class ScheduleController extends Controller
     }
 
 
-    public function update(ScheduleRequest $request, $id)
+    public function update(ScheduleRequest $request, $schedule)
     {
         try{
-            $schedule = Schedule::findOrFail($id);
-            $schedule->update($request->validated());
+            $schedule = $this->scheduleService->updateSchedule($schedule, $request->validated());
             return response()->json($schedule, 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Failed to update schedule', 'error' => $e->getMessage()], 500);
         }
     }
 
-    public function destroy($id)
+    public function destroy($schedule)
     {
         try{
-            $schedule = Schedule::findOrFail($id);
-            $schedule->delete();
+            $this->scheduleService->deleteSchedule($schedule);
             return response()->json(['message' => 'Schedule deleted successfully'], 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Failed to delete schedule', 'error' => $e->getMessage()], 500);
         }
     }
 
-    public function getUsers($id)
+    public function getUsers($schedule)
     {
         try{
-            $schedule = Schedule::findOrFail($id);
-            $users = $schedule->users;
+            $users = $this->scheduleService->getUsersByScheduleId($schedule);
             return response()->json($users, 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Failed to retrieve users for schedule', 'error' => $e->getMessage()], 500);

@@ -6,15 +6,13 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Exception;
+use App\Http\Requests\AuthRequest;
 
 class AuthController extends Controller{
 
-    public function login(Request $request){
+    public function login(AuthRequest $request){
         try {
-            $credentials = $request->validate([
-                'email'=>'required|email',
-                'password'=>'required|string',
-            ]);
+            $credentials = $request->validated();
 
             $user = User::where('email', $credentials['email'])->first();
 

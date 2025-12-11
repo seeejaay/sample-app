@@ -24,7 +24,7 @@ class RoleRequest extends FormRequest
      */
     public function rules(): array
     {
-        $roleId = $this->route('id');
+        $roleId = $this->route('role');
         $isUpdate = $this->isMethod('put') || $this->isMethod('patch');
         $required = $isUpdate ? 'sometimes' : 'required';
         

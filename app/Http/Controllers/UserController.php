@@ -2,135 +2,85 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\Schedule;
 use Exception;
 use Illuminate\Http\Request;
 use App\Http\Requests\UserRequest;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
+use App\Services\UserService\UserServiceInterface;
 
 class UserController extends Controller {
 
+    protected $userService;
+
+    public function __construct(UserServiceInterface $userService){
+        $this->userService = $userService;
+    }
+
     //View All Users
     public function index(){
-        return response()->json(User::with('role')->get());
+        try {
+            return response()->json($this->userService->getAllUsers());
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Failed to retrieve users', 'error' => $e->getMessage()], 500);
+        }
     }
 
     //Create User
-    public function store(UserRequest $request){
-        DB::beginTransaction();
-        
-        try{
-            $validated = $request->validated();
-            $validated['password'] = Hash::make($validated['password']);
+    public function store(UserRequest $request)
+    {
+        try {
+            $data = $request->validated();
+            $user = $this->userService->createUser($data);
             
-            $user = User::create($validated);
-            if($request->has('schedule_ids') &&$request->schedule_ids){
-                
-                if(count($request->schedule_ids) > 2){
-                    return response()->json([
-                        'message' => 'User cannot be assigned to more than two schedules.'
-                    ], 422);
-                }
-
-                foreach($request->schedule_ids as $scheduleId){
-                        if (!Schedule::find($scheduleId)) {
-                            return response()->json([
-                                'message' => "Schedule with ID {$scheduleId} does not exist."
-                            ], 422);
-                        }
-                    }
-                $user->schedules()->attach($request->schedule_ids);
-            }
-            DB::commit();
-
-            $user ->load('role', 'position','schedules:id,shift_name,time_in,time_out');
-        
-            return response()->json(['message'=>'User Created Successfully', 'user'=> $user],201);
-        }
-        catch (Exception $e) {
-            DB::rollBack();
-            return response()->json(['message'=>'Failed to create user', 'error' => $e->getMessage()], 500);
+            return response()->json([
+                'message' => 'User Created Successfully',
+                'user' => $user
+            ], 201);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Failed to create user',
+                'error' => $e->getMessage()
+            ], $e->getCode() ?: 500);
         }
     }
 
     //View User By ID
-    public function show($id){
+    public function show($user){
         try {
-            $user = User::findOrFail($id);
-            $user->load(['role:id,name','position:id,name','schedules:id,shift_name,time_in,time_out']);
-            
-            if(!$user){
-                return response()->json(['message'=>'User not found'],404);
-            }
+            $user = $this->userService->getUserById($user);
             return response()->json($user);
         } catch (Exception $e) {
-            return response()->json(['message'=>'Failed to retrieve user', 'error' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Failed to retrieve user', 'error' => $e->getMessage()], 500);
         }
     }
-
 
     //Edit User
-    public function update(UserRequest $request, $id){
-        DB::beginTransaction();
+    public function update(UserRequest $request, $user){
         try {
-            $user = User::findOrFail($id);
-            $validated = $request->validated();
-
-            if(isset($validated['password'])){
-                $validated['password'] = Hash::make($validated['password']);
-            }
-            
-            $user->update($validated);
-
-             if($request->has('schedule_ids') &&$request->schedule_ids){
-                
-                if(count($request->schedule_ids) > 2){
-                    return response()->json([
-                        'message' => 'User cannot be assigned to more than two schedules.'
-                    ], 422);
-                }
-
-                foreach($request->schedule_ids as $scheduleId){
-                        if (!Schedule::find($scheduleId)) {
-                            return response()->json([
-                                'message' => "Schedule with ID {$scheduleId} does not exist."
-                            ], 422);
-                        }
-                    }
-                $user->schedules()->sync($request->schedule_ids);
-            }
-            DB::commit();
-            $user->load('role', 'position','schedules:id,shift_name,time_in,time_out');
-            
-            return response()->json(['message'=>'User Updated Successfully', 'user'=>$user], 200);
+            $user = $this->userService->updateUser($user, $request->validated());
+            return response()->json(['message' => 'User Updated Successfully', 'user' => $user], 200);
         } catch (Exception $e) {
-            DB::rollBack();
-            return response()->json(['message'=>'Failed to update user', 'error' => $e->getMessage()], 500);
+            $statusCode = $e->getCode() ?: 500;
+            return response()->json(['message' => $e->getMessage()], $statusCode);
         }
     }
 
-
     //Delete user
-    public function destroy($id){
+    public function destroy($user){
         try {
-            $user = User::findOrFail($id);
-            $user->delete();
-            return response()->json(['message'=>'User Deleted Successfully'],204);
+            $this->userService->deleteUser($user);
+            return response()->json(['message' => 'User Deleted Successfully'], 204);
         } catch (Exception $e) {
-            return response()->json(['message'=>'Failed to delete user', 'error' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Failed to delete user', 'error' => $e->getMessage()], 500);
         }
     }
 
     //Current User Profile
     public function profile(Request $request){
         try {
-            $user = $request->user();
+            $user = $this->userService->getUserProfile($request->user());
             return response()->json($user);
         } catch (Exception $e) {
-            return response()->json(['message'=>'Failed to retrieve profile', 'error' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Failed to retrieve profile', 'error' => $e->getMessage()], 500);
         }
     }
-
 }
