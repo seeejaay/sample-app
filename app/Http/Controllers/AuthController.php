@@ -14,18 +14,14 @@ class AuthController extends Controller{
     public function __construct(AuthServiceInterface $authService){
         $this->authService = $authService;
     }
-
-
-
-
     public function login(AuthRequest $request){
         try {
-           $resule = $this->authService->login($request->validated());
+            $result = $this->authService->login($request->validated());
 
             return response()->json([
                 'message'=>'Login Successful',
-                'user'=>$resule['user'],
-                'token'=> $resule['token']
+                'user'=>$result['user'],
+                'token'=> $result['token']
             ]);
         } catch (Exception $e) {
             return response()->json(['message'=>'Failed to login', 'error' => $e->getMessage()], 500);
