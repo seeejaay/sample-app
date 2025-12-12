@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Exception;
 use App\Http\Requests\ScheduleRequest;
+use App\Http\Resources\ScheduleResource\ScheduleResource;
+use App\Http\Resources\ScheduleResource\ScheduleDropdownResource;
+use App\Http\Resources\UserResource\UserMinimalResource;
 use App\Repository\ScheduleRepository\ScheduleRepositoryInterface;
 class ScheduleController extends Controller
 {
@@ -17,7 +20,18 @@ class ScheduleController extends Controller
     // Simple CRUD - use Repository
     public function index(){
         try{
-            return response()->json($this->scheduleRepository->getAll());
+            $schedule = $this->scheduleRepository->getAll();
+            return response()->json(ScheduleResource::collection($schedule));
+        }
+        catch (Exception $e) {
+            return response()->json(['message'=>'Failed to retrieve schedules', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function dropdown(){
+        try{
+            $schedule = $this->scheduleRepository->getAll();
+            return response()->json(ScheduleDropdownResource::collection($schedule));
         }
         catch (Exception $e) {
             return response()->json(['message'=>'Failed to retrieve schedules', 'error' => $e->getMessage()], 500);
@@ -27,7 +41,9 @@ class ScheduleController extends Controller
     public function store(ScheduleRequest $request){
         try{
             $schedule = $this->scheduleRepository->create($request->validated());
-            return response()->json(['message'=>'Schedule Created Successfully', 'schedule'=> $schedule], 201);
+            return response()->json([
+            'message'=>'Schedule Created Successfully', 
+            'schedule'=> new ScheduleResource($schedule)], 201);
         }
         catch (Exception $e) {
             return response()->json(['message'=>'Failed to create schedule', 'error' => $e->getMessage()], 500);
@@ -36,7 +52,8 @@ class ScheduleController extends Controller
 
     public function show($schedule){
         try {
-            return response()->json($this->scheduleRepository->findById($schedule));
+            $schedule = $this->scheduleRepository->findById($schedule);
+            return new ScheduleResource($schedule);
         } catch (Exception $e) {
             return response()->json(['message'=>'Failed to retrieve schedule', 'error' => $e->getMessage()], 500);
         }
@@ -45,7 +62,9 @@ class ScheduleController extends Controller
     public function update(ScheduleRequest $request, $schedule){
         try {
             $schedule = $this->scheduleRepository->update($schedule, $request->validated());
-            return response()->json(['message'=>'Schedule Updated Successfully', 'schedule'=>$schedule], 200);
+            return response()->json([
+            'message'=>'Schedule Updated Successfully', 
+            'schedule'=> new ScheduleResource($schedule)], 200);
         } catch (Exception $e) {
             return response()->json(['message'=>'Failed to update schedule', 'error' => $e->getMessage()], 500);
         }
@@ -65,7 +84,7 @@ class ScheduleController extends Controller
     public function getUsers($schedule){
         try {
             $users = $this->scheduleRepository->getUsersByScheduleId($schedule);
-            return response()->json($users);
+            return UserMinimalResource::collection($users);
         } catch (Exception $e) {
             return response()->json(['message'=>'Failed to retrieve users', 'error' => $e->getMessage()], 500);
         }

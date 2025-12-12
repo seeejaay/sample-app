@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->time('time_in');
             $table->time('time_out');
-            $table->string('shift_name',100);
+            $table->string('shift_name',100)->unique();
             $table->timestamps();
         });
     }

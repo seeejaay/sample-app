@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use Exception;
 use Illuminate\Http\Request;
+use App\Exports\UsersExport\UsersExport;
 use App\Http\Requests\UserRequest;
-use App\Repository\UserRepository\UserRepositoryInterface;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Http\Resources\UserResource\UserResource;
 use App\Services\UserService\UserServiceInterface;
+use App\Repository\UserRepository\UserRepositoryInterface;
 
 class UserController extends Controller {
 
@@ -23,7 +26,9 @@ class UserController extends Controller {
 
     public function index(){
         try {
-            return response()->json($this->userRepository->getAll());
+            $users = $this->userRepository->getAll();
+
+            return response()->json(UserResource::collection($users));
         } catch (Exception $e) {
             return response()->json(['message' => 'Failed to retrieve users', 'error' => $e->getMessage()], 500);
         }
@@ -36,7 +41,7 @@ class UserController extends Controller {
             
             return response()->json([
                 'message' => 'User Created Successfully',
-                'user' => $user
+                'user' => new UserResource($user)
             ], 201);
         } catch (Exception $e) {
             return response()->json([
@@ -49,7 +54,7 @@ class UserController extends Controller {
     public function show($user){
         try {
             $user = $this->userRepository->findById($user);
-            return response()->json($user);
+            return new UserResource($user);
         } catch (Exception $e) {
             return response()->json(['message' => 'Failed to retrieve user', 'error' => $e->getMessage()], 500);
         }
@@ -58,7 +63,10 @@ class UserController extends Controller {
     public function update(UserRequest $request, $user){
         try {
             $user = $this->userService->updateUser($user, $request->validated());
-            return response()->json(['message' => 'User Updated Successfully', 'user' => $user], 200);
+            return response()->json([
+            'message' => 'User Updated Successfully',
+            'user' => new UserResource($user)
+        ], 200);
         } catch (Exception $e) {
             $statusCode = $e->getCode() ?: 500;
             return response()->json(['message' => $e->getMessage()], $statusCode);
@@ -77,9 +85,19 @@ class UserController extends Controller {
     public function profile(Request $request){
         try {
             $user = $request->user();
-            return response()->json($user);
+            return new UserResource($user);
         } catch (Exception $e) {
             return response()->json(['message' => 'Failed to retrieve profile', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function export()
+    {
+        try {
+            $users = $this->userService->exportUsers();
+            return Excel::download(new UsersExport($users), 'users-' . now()->format('Y-m-d') . '.xlsx');
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Failed to export users', 'error' => $e->getMessage()], $e->getCode() ?: 500);
         }
     }
 }

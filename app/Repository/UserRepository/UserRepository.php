@@ -14,27 +14,17 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
 
     public function getAll()
     {
-        return $this->model->with('role', 'position')->get();
+        return $this->model->get();
     }
 
     public function findById($id)
     {
-        return $this->model
-            ->with([
-                'role:id,name', 
-                'position:id,name', 
-                'schedules:id,shift_name,time_in,time_out'
-            ])
-            ->findOrFail($id);
-    }
-    
-    public function attachSchedules($user, array $scheduleIds)
-    {
-        $user->schedules()->attach($scheduleIds);
+        return $this->model->findOrFail($id);
     }
 
-    public function syncSchedules($user, array $scheduleIds)
+    public function getAllForExport()
     {
-        $user->schedules()->sync($scheduleIds);
+        return $this->model->with(['role', 'position', 'schedules'])->get();
     }
+    
 }

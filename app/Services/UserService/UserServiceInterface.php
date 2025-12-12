@@ -12,4 +12,5 @@ interface UserServiceInterface
     public function updateUser($userId, array $data);
     public function deleteUser($userId);
     public function getUserProfile($user);
+    public function exportUsers();
 }

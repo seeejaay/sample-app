@@ -1,11 +1,11 @@
 <?php
 namespace App\Services\UserService;
 
+use Exception;
 use App\Models\Schedule;
-use App\Repository\UserRepository\UserRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Exception;
+use App\Repository\UserRepository\UserRepositoryInterface;
 
 class UserService implements UserServiceInterface {
 
@@ -35,7 +35,7 @@ class UserService implements UserServiceInterface {
             // Business Logic: Validate and attach schedules
             if(isset($data['schedule_ids']) && !empty($data['schedule_ids'])){
                 $this->validateSchedules($data['schedule_ids']);
-                $this->userRepository->attachSchedules($user, $data['schedule_ids']);
+                $user->schedules()->attach($data['schedule_ids']);
             }
 
             DB::commit();
@@ -70,7 +70,7 @@ class UserService implements UserServiceInterface {
                 if (!empty($data['schedule_ids'])){
                     $this->validateSchedules($data['schedule_ids']);
                 }
-                $this->userRepository->syncSchedules($user, $data['schedule_ids']);
+                $user->schedules()->sync($data['schedule_ids']);
             }
 
             DB::commit();
@@ -103,6 +103,22 @@ class UserService implements UserServiceInterface {
         
         if (!empty($missingSchedules)){
             throw new Exception("Schedule(s) with ID(s) " . implode(', ', $missingSchedules) . " do not exist.", 422);
+        }
+    }
+
+    public function exportUsers()
+    {
+        try {
+            $users = $this->userRepository->getAllForExport();
+            
+            // Business logic: Check if there are users to export
+            if ($users->isEmpty()) {
+                throw new Exception('No users to export', 404);
+            }
+            
+            return $users;
+        } catch (Exception $e) {
+            throw $e;
         }
     }
 }

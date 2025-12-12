@@ -31,15 +31,15 @@ class UserScheduleService implements UserScheduleServiceInterface
             $user = $this->userRepository->findById($data['user_id']);
             $schedule = $this->scheduleRepository->findById($data['schedule_id']);
 
-            if ($this->userScheduleRepository->hasSchedule($user, $schedule->id)) {
+            if ($user->schedules()->where('schedule_id', $schedule->id)->exists()) {
                 throw new Exception('Schedule is already assigned to the user.', 422);
             }
 
-            if ($this->userScheduleRepository->getScheduleCount($user) >= 2) {
+            if ($user->schedules()->count() >= 2) {
                 throw new Exception('User cannot be assigned to more than two schedules.', 422);
             }
 
-            $this->userScheduleRepository->attachSchedule($user, $schedule->id);
+            $user->schedules()->attach($schedule->id);
 
             DB::commit();
             return true;
@@ -56,12 +56,11 @@ class UserScheduleService implements UserScheduleServiceInterface
         try {
             $user = $this->userRepository->findById($userId);
 
-            if (!$this->userScheduleRepository->hasSchedule($user, $scheduleId)) {
+            if (!$user->schedules()->where('schedule_id', $scheduleId)->exists()) {
                 throw new Exception('Schedule is not assigned to the user.', 422);
             }
 
-            $this->userScheduleRepository->detachSchedule($user, $scheduleId);
-
+            $user->schedules()->detach($scheduleId);
             DB::commit();
             return true;
 

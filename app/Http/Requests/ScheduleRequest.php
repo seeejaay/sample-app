@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -23,14 +24,26 @@ class ScheduleRequest extends FormRequest
      */
     public function rules(): array
     {
-        // $scheduleId = $this->route('id');
+        $scheduleId = $this->route('id');
         $isUpdate = $this->isMethod('put') || $this->isMethod('patch');
         $required = $isUpdate ? 'sometimes' : 'required';
+
+        $uniqueRule = $isUpdate 
+        ? 'unique:schedules,shift_name,' . $this->route('schedule')
+        : 'unique:schedules,shift_name';
+
+
         return [
             //
             'time_in' => "{$required}|date_format:H:i",
             'time_out' => "{$required}|date_format:H:i|after:time_in",
-            'shift_name' => "{$required}|string|max:255|regex:/^[a-zA-Z0-9\s\-]+$/",
+                'shift_name' => [
+                $required,
+                'string',
+                'max:255',
+                'regex:/^[a-zA-Z0-9\s\-]+$/',
+                Rule::unique('schedules', 'shift_name')->ignore($scheduleId),
+            ],
         ];
     }
 

@@ -21,7 +21,7 @@ class UserScheduleRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
-       public function rules(): array
+    public function rules(): array
     {
         return [
             'user_id' => 'required|exists:users,id',
