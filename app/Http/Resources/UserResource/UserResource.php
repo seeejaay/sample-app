@@ -2,10 +2,12 @@
 
 namespace App\Http\Resources\UserResource;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Carbon\Carbon;
-
+use App\Http\Resources\RoleResource\RoleDropdownResource;
+use App\Http\Resources\PositionResource\PositionDropdownResource;
+use App\Http\Resources\ScheduleResource\ScheduleDropdownResource;
 class UserResource extends JsonResource
 {
     /**
@@ -19,22 +21,10 @@ class UserResource extends JsonResource
             'id' => $this->id,
             'name' => $this->firstname . ' ' . $this->middlename . ' ' . $this->lastname,
             'email' => $this->email,
-            'role' => [
-                'id' => $this->role->id,
-                'name' => $this->role->name,
-            ],
-            'position' => [
-                'id' => $this->position->id,
-                'name' => $this->position->name,
-            ],
-            'schedules' => $this->schedules->map(function($schedule) {
-                return [
-                    'id' => $schedule->id,
-                    'shift_name' => $schedule->shift_name,
-                    'time_in' => Carbon::parse($schedule->time_in)->format('h:i A'),
-                    'time_out' => Carbon::parse($schedule->time_out)->format('h:i A'),
-                ];
-            }),
+            'role' => new RoleDropdownResource($this->role),
+            'position' => new PositionDropdownResource($this->position),
+            'schedules' => ScheduleDropdownResource::collection($this->schedules),
         ];
     }
+    
 }
