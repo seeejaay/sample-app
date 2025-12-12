@@ -11,7 +11,7 @@ class UserMinimalResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'name' => $this->firstname. ' ' . $this->lastname,
+            'name' => $this->getFullNameAttribute(),
             'email' => $this->email,
             'role' =>  $this->role->name,
             'position' =>  $this->position->name,

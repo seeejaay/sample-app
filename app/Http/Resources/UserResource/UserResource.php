@@ -19,7 +19,7 @@ class UserResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'name' => $this->firstname . ' ' . $this->middlename . ' ' . $this->lastname,
+            'name' => $this->getFullNameAttribute(),
             'email' => $this->email,
             'role' => new RoleDropdownResource($this->role),
             'position' => new PositionDropdownResource($this->position),

@@ -65,4 +65,9 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Schedule::class, 'user_schedules', 'user_id', 'schedule_id');
     }
+
+    public function getFullNameAttribute()
+    {
+        return $this->firstname . ' ' . $this->middlename . ' ' . $this->lastname;
+    }
 }
